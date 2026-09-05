@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Field Log</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
 <style>
   :root{
     --ink-bg: #171B17;
@@ -277,7 +276,7 @@
 </head>
 <body>
 
-<div class="ribbon-track" aria-hidden="true"><div class="ribbon-fill" id="ribbonFill"></div></div>
+<div class="ribbon-track" aria-hidden="true"><div class="ribbon-fill" id="ribbonFill" style="height: 100%;"></div></div>
 
 <header class="cover">
   <h1 contenteditable="true" spellcheck="false" id="siteTitle">The Field Log</h1>
@@ -286,7 +285,58 @@
 </header>
 
 <div class="book-wrap">
-  <div class="book" id="book"></div>
+  <div class="book" id="book"><article class="entry">
+      <div class="entry-index">
+        <div class="stamp">
+          <span class="no">No. 03</span>
+          <span class="date">September 2026</span>
+        </div>
+        <span class="tag">Fitness Tracker</span>
+        <div class="entry-actions">
+          <button class="link-btn" data-action="edit" data-id="fed28e51-d99d-4b00-ab9d-e4b8890ec647">Edit</button>
+          <button class="link-btn" data-action="delete" data-id="fed28e51-d99d-4b00-ab9d-e4b8890ec647">Remove</button>
+        </div>
+      </div>
+      <div class="entry-body">
+        <h2>TEST</h2>
+        <p class="desc">Found the frame in a barn sale for almost nothing. Stripped it to bare metal, rebuilt the headset, and replaced every cable. Still deciding on a paint colour.</p>
+        
+      </div>
+    </article><article class="entry">
+      <div class="entry-index">
+        <div class="stamp">
+          <span class="no">No. 02</span>
+          <span class="date">Summer 2026</span>
+        </div>
+        <span class="tag">Growing</span>
+        <div class="entry-actions">
+          <button class="link-btn" data-action="edit" data-id="a5a72ad2-aa2f-4756-b18d-3802c16f7372">Edit</button>
+          <button class="link-btn" data-action="delete" data-id="a5a72ad2-aa2f-4756-b18d-3802c16f7372">Remove</button>
+        </div>
+      </div>
+      <div class="entry-body">
+        <h2>Balcony terracotta garden</h2>
+        <p class="desc">Started with three pots of tomatoes and it got out of hand. Now tracking watering schedules and fighting off aphids with neem oil rather than panic.</p>
+        
+      </div>
+    </article><article class="entry">
+      <div class="entry-index">
+        <div class="stamp">
+          <span class="no">No. 01</span>
+          <span class="date">Autumn 2026</span>
+        </div>
+        <span class="tag">Code &amp; craft</span>
+        <div class="entry-actions">
+          <button class="link-btn" data-action="edit" data-id="09543d5c-e5cb-4f82-a821-df5ebc13743c">Edit</button>
+          <button class="link-btn" data-action="delete" data-id="09543d5c-e5cb-4f82-a821-df5ebc13743c">Remove</button>
+        </div>
+      </div>
+      <div class="entry-body">
+        <h2>Watercolour plotter drawings</h2>
+        <p class="desc">Wrote a small script that generates line paths from photos, then drives a pen plotter to paint them in real watercolour. Replace this with your own note about what pulled you into it.</p>
+        
+      </div>
+    </article></div>
 </div>
 
 <button class="fab" id="fabAdd" aria-label="Add a new entry">+</button>
@@ -296,35 +346,36 @@
   <div class="io-controls">
     <button id="saveBtn" type="button" class="save">💾 Save changes</button>
     <button id="exportBtn" type="button">Export data</button>
-    <label>Import data<input type="file" id="importInput" accept="application/json" hidden></label>
+    <label>Import data<input type="file" id="importInput" accept="application/json" hidden=""></label>
   </div>
 </footer>
 
-<script type="application/json" id="seed-data">
-[
+<script type="application/json" id="seed-data">[
   {
-    "date": "Spring 2026",
-    "category": "Mechanical",
-    "title": "Restoring a 1972 road bike",
+    "date": "September 2026",
+    "category": "Fitness Tracker",
+    "title": "TEST",
     "desc": "Found the frame in a barn sale for almost nothing. Stripped it to bare metal, rebuilt the headset, and replaced every cable. Still deciding on a paint colour.",
-    "link": ""
+    "link": "",
+    "id": "fed28e51-d99d-4b00-ab9d-e4b8890ec647"
   },
   {
     "date": "Summer 2026",
     "category": "Growing",
     "title": "Balcony terracotta garden",
     "desc": "Started with three pots of tomatoes and it got out of hand. Now tracking watering schedules and fighting off aphids with neem oil rather than panic.",
-    "link": ""
+    "link": "",
+    "id": "a5a72ad2-aa2f-4756-b18d-3802c16f7372"
   },
   {
     "date": "Autumn 2026",
     "category": "Code & craft",
     "title": "Watercolour plotter drawings",
     "desc": "Wrote a small script that generates line paths from photos, then drives a pen plotter to paint them in real watercolour. Replace this with your own note about what pulled you into it.",
-    "link": ""
+    "link": "",
+    "id": "09543d5c-e5cb-4f82-a821-df5ebc13743c"
   }
-]
-</script>
+]</script>
 
 <script>
 (function(){
@@ -546,5 +597,6 @@
   render();
 })();
 </script>
-</body>
-</html>
+
+
+</body></html>
