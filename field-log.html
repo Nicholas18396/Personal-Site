@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Field Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-bg: #171B17;
+    --ink-bg-deep: #10130F;
+    --paper: #F1E9D6;
+    --paper-line: rgba(35,38,31,0.14);
+    --text-light: #EDE7D6;
+    --text-light-dim: rgba(237,231,214,0.62);
+    --text-dark: #23261F;
+    --text-dark-dim: rgba(35,38,31,0.62);
+    --brass: #B9834A;
+    --brass-deep: #93602E;
+    --moss: #5C7A5E;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin:0;
+    background: var(--ink-bg);
+    color: var(--text-light);
+    font-family: 'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,h2,h3{ font-family: 'Fraunces', serif; font-weight: 500; margin:0; }
+  p{ margin:0; }
+  a{ color: inherit; }
+  button{ font-family: inherit; cursor: pointer; }
+  button:focus-visible, [contenteditable]:focus-visible, input:focus-visible, textarea:focus-visible{
+    outline: 2px solid var(--brass);
+    outline-offset: 3px;
+  }
+
+  /* ---------- progress ribbon ---------- */
+  .ribbon-track{
+    position: fixed;
+    top: 0; right: 14px;
+    width: 2px; height: 100vh;
+    background: rgba(237,231,214,0.12);
+    z-index: 40;
+  }
+  .ribbon-fill{
+    position: absolute; top:0; left:0; width:100%;
+    background: var(--brass);
+    height: 0%;
+    transition: height 0.08s linear;
+  }
+  @media (max-width: 640px){ .ribbon-track{ display:none; } }
+
+  /* ---------- cover ---------- */
+  .cover{
+    min-height: 92vh;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    text-align:center;
+    padding: 8vh 6vw 6vh;
+    gap: 1.6rem;
+  }
+  .cover h1{
+    font-size: clamp(2.6rem, 8vw, 5.4rem);
+    letter-spacing: -0.01em;
+    line-height: 1.02;
+    max-width: 16ch;
+  }
+  .cover .tagline{
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: var(--text-light-dim);
+    max-width: 38ch;
+    line-height: 1.6;
+  }
+  [contenteditable="true"]{ cursor: text; border-radius: 2px; }
+  [contenteditable="true"]:hover{ background: rgba(237,231,214,0.06); }
+
+  .scroll-hint{
+    margin-top: 2rem;
+    background: none; border: none;
+    color: var(--text-light-dim);
+    font-size: 0.9rem;
+    padding: 0.4rem 0.2rem;
+    border-bottom: 1px solid rgba(237,231,214,0.3);
+  }
+  .scroll-hint:hover{ color: var(--text-light); border-color: var(--text-light); }
+
+  @media (prefers-reduced-motion: no-preference){
+    .cover h1{
+      animation: settle 0.7s cubic-bezier(.2,.7,.2,1) both;
+    }
+    @keyframes settle{
+      0%{ transform: scale(1.12); opacity: 0; }
+      100%{ transform: scale(1); opacity: 1; }
+    }
+  }
+
+  /* ---------- the book ---------- */
+  .book-wrap{
+    padding: 0 5vw 10vh;
+  }
+  .book{
+    max-width: 880px;
+    margin: 0 auto;
+    background: var(--paper);
+    color: var(--text-dark);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.35);
+  }
+
+  .entry{
+    display:grid;
+    grid-template-columns: 168px 1fr;
+    gap: 2rem;
+    padding: 2.6rem 2.6rem;
+    border-bottom: 1px solid var(--paper-line);
+    align-items: start;
+  }
+  .entry:last-of-type{ border-bottom: none; }
+
+  .entry-index{
+    display:flex; flex-direction:column; align-items:flex-start; gap: 0.9rem;
+  }
+  .stamp{
+    width: 82px; height: 82px;
+    border: 1.5px solid var(--brass);
+    border-radius: 50%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    transform: rotate(-5deg);
+    color: var(--brass-deep);
+    line-height: 1.15;
+  }
+  .stamp::before{
+    content:"";
+    position:absolute;
+  }
+  .stamp .no{ font-family:'Fraunces', serif; font-size: 1rem; }
+  .stamp .date{ font-size: 0.66rem; color: var(--brass-deep); opacity: 0.85; margin-top: 2px; text-align:center; padding: 0 6px; }
+
+  .tag{
+    display:inline-block;
+    background: var(--moss);
+    color: var(--text-light);
+    font-size: 0.75rem;
+    padding: 0.25rem 0.6rem;
+    max-width: 140px;
+  }
+
+  .entry-actions{ display:flex; gap: 0.9rem; margin-top: 0.2rem; }
+  .link-btn{
+    background:none; border:none; padding:0;
+    font-size: 0.78rem; color: var(--text-dark-dim);
+    border-bottom: 1px solid transparent;
+  }
+  .link-btn:hover{ color: var(--text-dark); border-color: var(--text-dark-dim); }
+
+  .entry-body h2{
+    font-size: clamp(1.4rem, 2.6vw, 2rem);
+    margin-bottom: 0.7rem;
+  }
+  .entry-body .desc{
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text-dark);
+    max-width: 62ch;
+    white-space: pre-wrap;
+  }
+  .entry-body .proj-link{
+    display:inline-block;
+    margin-top: 1rem;
+    font-size: 0.92rem;
+    border-bottom: 1px solid var(--text-dark);
+    padding-bottom: 1px;
+  }
+
+  @media (max-width: 640px){
+    .entry{ grid-template-columns: 1fr; gap: 1.2rem; padding: 2rem 1.4rem; }
+    .entry-index{ flex-direction: row; align-items:center; gap: 1rem; }
+  }
+
+  /* ---------- form (add / edit) ---------- */
+  .entry-form{
+    padding: 2.4rem 2.6rem;
+    border-bottom: 1px solid var(--paper-line);
+    display:flex; flex-direction:column; gap: 1.1rem;
+  }
+  @media (max-width: 640px){ .entry-form{ padding: 2rem 1.4rem; } }
+  .entry-form label{
+    display:flex; flex-direction:column; gap: 0.35rem;
+    font-size: 0.85rem; color: var(--text-dark-dim);
+  }
+  .entry-form input, .entry-form textarea{
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 1rem;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid rgba(35,38,31,0.3);
+    background: #fff;
+    color: var(--text-dark);
+    resize: vertical;
+  }
+  .entry-form textarea{ min-height: 90px; }
+  .form-row{ display:flex; gap: 1rem; flex-wrap: wrap; }
+  .form-row label{ flex:1; min-width: 160px; }
+  .form-buttons{ display:flex; gap: 0.8rem; margin-top: 0.4rem; }
+
+  .btn-stamp{
+    border: 1.5px solid var(--brass-deep);
+    background: transparent;
+    color: var(--brass-deep);
+    padding: 0.55rem 1.3rem;
+    font-size: 0.92rem;
+  }
+  .btn-stamp:hover{ background: var(--brass-deep); color: var(--paper); }
+  .btn-ghost{
+    border: none; background: none;
+    color: var(--text-dark-dim);
+    font-size: 0.92rem;
+    border-bottom: 1px solid transparent;
+  }
+  .btn-ghost:hover{ color: var(--text-dark); border-color: var(--text-dark-dim); }
+
+  .empty-note{
+    padding: 3rem 2.6rem;
+    color: var(--text-dark-dim);
+    font-size: 0.95rem;
+  }
+
+  /* ---------- floating add button ---------- */
+  .fab{
+    position: fixed;
+    bottom: 28px; right: 28px;
+    width: 58px; height: 58px;
+    border-radius: 50%;
+    background: var(--brass);
+    color: var(--ink-bg-deep);
+    border: none;
+    font-size: 1.6rem;
+    line-height: 1;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+    z-index: 45;
+  }
+  .fab:hover{ background: var(--brass-deep); }
+
+  /* ---------- footer ---------- */
+  footer{
+    padding: 4rem 6vw 5rem;
+    text-align:center;
+    color: var(--text-light-dim);
+    font-size: 0.85rem;
+  }
+  footer .io-controls{
+    margin-top: 1.2rem;
+    display:flex; gap: 1.6rem; justify-content:center; flex-wrap: wrap;
+  }
+  footer button, footer label{
+    background:none; border:none;
+    color: var(--text-light-dim);
+    font-size: 0.85rem;
+    border-bottom: 1px solid rgba(237,231,214,0.3);
+    padding-bottom: 2px;
+  }
+  footer button:hover, footer label:hover{ color: var(--text-light); border-color: var(--text-light); }
+  footer label{ cursor:pointer; }
+</style>
+</head>
+<body>
+
+<div class="ribbon-track" aria-hidden="true"><div class="ribbon-fill" id="ribbonFill"></div></div>
+
+<header class="cover">
+  <h1 contenteditable="true" spellcheck="false" id="siteTitle">The Field Log</h1>
+  <p class="tagline" contenteditable="true" spellcheck="false" id="siteTagline">A running record of things I've built, grown, and tinkered with outside of work.</p>
+  <button class="scroll-hint" id="scrollHint">browse the log</button>
+</header>
+
+<div class="book-wrap">
+  <div class="book" id="book"></div>
+</div>
+
+<button class="fab" id="fabAdd" aria-label="Add a new entry">+</button>
+
+<footer>
+  <p>Edits made here live for this browser session. Export the log to keep them, import it later to pick back up.</p>
+  <div class="io-controls">
+    <button id="exportBtn" type="button">Export log</button>
+    <label>Import log<input type="file" id="importInput" accept="application/json" hidden></label>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const seed = [
+    {
+      id: crypto.randomUUID(),
+      date: "Spring 2026",
+      category: "Mechanical",
+      title: "Restoring a 1972 road bike",
+      desc: "Found the frame in a barn sale for almost nothing. Stripped it to bare metal, rebuilt the headset, and replaced every cable. Still deciding on a paint colour.",
+      link: ""
+    },
+    {
+      id: crypto.randomUUID(),
+      date: "Summer 2026",
+      category: "Growing",
+      title: "Balcony terracotta garden",
+      desc: "Started with three pots of tomatoes and it got out of hand. Now tracking watering schedules and fighting off aphids with neem oil rather than panic.",
+      link: ""
+    },
+    {
+      id: crypto.randomUUID(),
+      date: "Autumn 2026",
+      category: "Code & craft",
+      title: "Watercolour plotter drawings",
+      desc: "Wrote a small script that generates line paths from photos, then drives a pen plotter to paint them in real watercolour. Replace this with your own note about what pulled you into it.",
+      link: ""
+    }
+  ];
+
+  // entries kept newest-first
+  let entries = JSON.parse(JSON.stringify(seed));
+  let editingId = null;
+  let addingOpen = false;
+
+  const book = document.getElementById('book');
+
+  function esc(str){
+    const d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+  }
+
+  function render(){
+    book.innerHTML = '';
+
+    if (addingOpen){
+      book.appendChild(buildForm(null));
+    }
+
+    if (entries.length === 0 && !addingOpen){
+      const note = document.createElement('div');
+      note.className = 'empty-note';
+      note.textContent = 'No entries yet. Add the first project you have been tinkering with.';
+      book.appendChild(note);
+      return;
+    }
+
+    entries.forEach((entry, i) => {
+      const number = entries.length - i;
+      if (editingId === entry.id){
+        book.appendChild(buildForm(entry, number));
+      } else {
+        book.appendChild(buildEntry(entry, number));
+      }
+    });
+  }
+
+  function buildEntry(entry, number){
+    const el = document.createElement('article');
+    el.className = 'entry';
+
+    const numStr = String(number).padStart(2, '0');
+
+    el.innerHTML = `
+      <div class="entry-index">
+        <div class="stamp">
+          <span class="no">No. ${numStr}</span>
+          <span class="date">${esc(entry.date)}</span>
+        </div>
+        ${entry.category ? `<span class="tag">${esc(entry.category)}</span>` : ''}
+        <div class="entry-actions">
+          <button class="link-btn" data-action="edit" data-id="${entry.id}">Edit</button>
+          <button class="link-btn" data-action="delete" data-id="${entry.id}">Remove</button>
+        </div>
+      </div>
+      <div class="entry-body">
+        <h2>${esc(entry.title) || 'Untitled project'}</h2>
+        <p class="desc">${esc(entry.desc)}</p>
+        ${entry.link ? `<a class="proj-link" href="${esc(entry.link)}" target="_blank" rel="noopener">Visit link</a>` : ''}
+      </div>
+    `;
+    return el;
+  }
+
+  function buildForm(entry, number){
+    const wrap = document.createElement('div');
+    wrap.className = 'entry-form';
+    const isEdit = !!entry;
+    wrap.innerHTML = `
+      <h3>${isEdit ? 'Edit entry' : 'New entry'}</h3>
+      <div class="form-row">
+        <label>Date or season
+          <input type="text" name="date" value="${isEdit ? esc(entry.date) : ''}" placeholder="e.g. Spring 2026">
+        </label>
+        <label>Category
+          <input type="text" name="category" value="${isEdit ? esc(entry.category) : ''}" placeholder="e.g. Woodworking">
+        </label>
+      </div>
+      <label>Title
+        <input type="text" name="title" value="${isEdit ? esc(entry.title) : ''}" placeholder="What did you make?">
+      </label>
+      <label>Notes
+        <textarea name="desc" placeholder="What it is, how it went, what's next.">${isEdit ? esc(entry.desc) : ''}</textarea>
+      </label>
+      <label>Link (optional)
+        <input type="url" name="link" value="${isEdit ? esc(entry.link) : ''}" placeholder="https://">
+      </label>
+      <div class="form-buttons">
+        <button type="button" class="btn-stamp" data-action="save" data-id="${isEdit ? entry.id : ''}">Save entry</button>
+        <button type="button" class="btn-ghost" data-action="cancel">Cancel</button>
+      </div>
+    `;
+    return wrap;
+  }
+
+  book.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const action = btn.dataset.action;
+
+    if (action === 'edit'){
+      editingId = btn.dataset.id;
+      addingOpen = false;
+      render();
+      document.getElementById('book').scrollIntoView({ block: 'center', behavior: 'smooth' });
+    } else if (action === 'delete'){
+      entries = entries.filter(en => en.id !== btn.dataset.id);
+      render();
+    } else if (action === 'cancel'){
+      editingId = null;
+      addingOpen = false;
+      render();
+    } else if (action === 'save'){
+      const form = btn.closest('.entry-form');
+      const data = {
+        date: form.querySelector('[name="date"]').value.trim() || 'Undated',
+        category: form.querySelector('[name="category"]').value.trim(),
+        title: form.querySelector('[name="title"]').value.trim(),
+        desc: form.querySelector('[name="desc"]').value.trim(),
+        link: form.querySelector('[name="link"]').value.trim()
+      };
+      const id = btn.dataset.id;
+      if (id){
+        const idx = entries.findIndex(en => en.id === id);
+        if (idx > -1) entries[idx] = { ...entries[idx], ...data };
+        editingId = null;
+      } else {
+        entries.unshift({ id: crypto.randomUUID(), ...data });
+        addingOpen = false;
+      }
+      render();
+    }
+  });
+
+  document.getElementById('fabAdd').addEventListener('click', () => {
+    editingId = null;
+    addingOpen = true;
+    render();
+    document.querySelector('.book-wrap').scrollIntoView({ block: 'start', behavior: 'smooth' });
+  });
+
+  document.getElementById('scrollHint').addEventListener('click', () => {
+    document.querySelector('.book-wrap').scrollIntoView({ block: 'start', behavior: 'smooth' });
+  });
+
+  // export / import
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    const payload = {
+      title: document.getElementById('siteTitle').textContent.trim(),
+      tagline: document.getElementById('siteTagline').textContent.trim(),
+      entries
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'field-log.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('importInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        if (data.title) document.getElementById('siteTitle').textContent = data.title;
+        if (data.tagline) document.getElementById('siteTagline').textContent = data.tagline;
+        if (Array.isArray(data.entries)) entries = data.entries;
+        editingId = null;
+        addingOpen = false;
+        render();
+      } catch (err){
+        alert('That file could not be read as a log export.');
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  // scroll progress ribbon
+  const fill = document.getElementById('ribbonFill');
+  function updateRibbon(){
+    const scrolled = window.scrollY;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = max > 0 ? Math.min(100, Math.max(0, (scrolled / max) * 100)) : 0;
+    fill.style.height = pct + '%';
+  }
+  window.addEventListener('scroll', updateRibbon, { passive: true });
+  updateRibbon();
+
+  render();
+})();
+</script>
+</body>
+</html>
