@@ -265,6 +265,14 @@
   }
   footer button:hover, footer label:hover{ color: var(--text-light); border-color: var(--text-light); }
   footer label{ cursor:pointer; }
+  footer button.save{
+    background: var(--brass);
+    color: var(--ink-bg-deep);
+    border-bottom: none;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+  }
+  footer button.save:hover{ background: var(--brass-deep); color: var(--text-light); }
 </style>
 </head>
 <body>
@@ -284,44 +292,46 @@
 <button class="fab" id="fabAdd" aria-label="Add a new entry">+</button>
 
 <footer>
-  <p>Edits made here live for this browser session. Export the log to keep them, import it later to pick back up.</p>
+  <p>Click "Save changes" any time to download an updated index.html with your edits baked in as the new starting point — re-upload that file to GitHub (overwriting the old one) to make changes stick. Export/Import are a lighter-weight backup of just the data.</p>
   <div class="io-controls">
-    <button id="exportBtn" type="button">Export log</button>
-    <label>Import log<input type="file" id="importInput" accept="application/json" hidden></label>
+    <button id="saveBtn" type="button" class="save">💾 Save changes</button>
+    <button id="exportBtn" type="button">Export data</button>
+    <label>Import data<input type="file" id="importInput" accept="application/json" hidden></label>
   </div>
 </footer>
 
+<script type="application/json" id="seed-data">
+[
+  {
+    "date": "Spring 2026",
+    "category": "Mechanical",
+    "title": "Restoring a 1972 road bike",
+    "desc": "Found the frame in a barn sale for almost nothing. Stripped it to bare metal, rebuilt the headset, and replaced every cable. Still deciding on a paint colour.",
+    "link": ""
+  },
+  {
+    "date": "Summer 2026",
+    "category": "Growing",
+    "title": "Balcony terracotta garden",
+    "desc": "Started with three pots of tomatoes and it got out of hand. Now tracking watering schedules and fighting off aphids with neem oil rather than panic.",
+    "link": ""
+  },
+  {
+    "date": "Autumn 2026",
+    "category": "Code & craft",
+    "title": "Watercolour plotter drawings",
+    "desc": "Wrote a small script that generates line paths from photos, then drives a pen plotter to paint them in real watercolour. Replace this with your own note about what pulled you into it.",
+    "link": ""
+  }
+]
+</script>
+
 <script>
 (function(){
-  const seed = [
-    {
-      id: crypto.randomUUID(),
-      date: "Spring 2026",
-      category: "Mechanical",
-      title: "Restoring a 1972 road bike",
-      desc: "Found the frame in a barn sale for almost nothing. Stripped it to bare metal, rebuilt the headset, and replaced every cable. Still deciding on a paint colour.",
-      link: ""
-    },
-    {
-      id: crypto.randomUUID(),
-      date: "Summer 2026",
-      category: "Growing",
-      title: "Balcony terracotta garden",
-      desc: "Started with three pots of tomatoes and it got out of hand. Now tracking watering schedules and fighting off aphids with neem oil rather than panic.",
-      link: ""
-    },
-    {
-      id: crypto.randomUUID(),
-      date: "Autumn 2026",
-      category: "Code & craft",
-      title: "Watercolour plotter drawings",
-      desc: "Wrote a small script that generates line paths from photos, then drives a pen plotter to paint them in real watercolour. Replace this with your own note about what pulled you into it.",
-      link: ""
-    }
-  ];
+  const seed = JSON.parse(document.getElementById('seed-data').textContent);
 
   // entries kept newest-first
-  let entries = JSON.parse(JSON.stringify(seed));
+  let entries = seed.map(e => ({ ...e, id: e.id || crypto.randomUUID() }));
   let editingId = null;
   let addingOpen = false;
 
@@ -478,6 +488,26 @@
     const a = document.createElement('a');
     a.href = url;
     a.download = 'field-log.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // save changes -- bakes current entries + header text back into a fresh,
+  // downloadable index.html that becomes the new starting point on next load
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    editingId = null;
+    addingOpen = false;
+    render();
+
+    const seedScript = document.getElementById('seed-data');
+    seedScript.textContent = JSON.stringify(entries, null, 2);
+
+    const htmlText = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    const blob = new Blob([htmlText], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'index.html';
     a.click();
     URL.revokeObjectURL(url);
   });
